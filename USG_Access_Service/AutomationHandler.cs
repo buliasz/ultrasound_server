@@ -37,8 +37,8 @@ namespace USG_Access_Service
         internal string TxTypeValue => _txTypeElement.Current.Name;
         internal string ImagingRangeValue => _imagingRangeElement.Current.Name;
         internal string FramerateValue => _framerateElement.Current.Name;
-        internal string PaletteValue => _paletteElement.Current.Name;
-        internal string TxSignalValue => _txSginalElement.Current.Name;
+        internal string PaletteValue => "OK"; // _paletteElement.Current.Name;
+        internal string TxSignalValue => "OK"; // _txSginalElement.Current.Name;
 
         // Methods
         public AutomationHandler()
@@ -48,7 +48,9 @@ namespace USG_Access_Service
 
         internal void Initialize()
         {
+            // Get the Desktop root automation Element
             AutomationElement rootDesktopAutomationElement = AutomationElement.RootElement;
+            // Wait for uScan window
             Condition windowNameCondition = new PropertyCondition(AutomationElement.NameProperty, _USCAN_WINDOW_NAME);
             _uScanWindow = rootDesktopAutomationElement.FindFirst(TreeScope.Children, windowNameCondition);
             while (_uScanWindow is null)
@@ -167,58 +169,9 @@ namespace USG_Access_Service
         internal void GainDown() => _gainDownButton.Invoke();
         internal void AreaUp() => _areaUpButton.Invoke();
         internal void AreaDown() => _areaDownButton.Invoke();
-
-        /*
-        // Private methods
-        private void SelectFromCombo(AutomationElement element, string selection)
-        {
-            try
-            {
-                ExpandCollapsePattern expandCollapsePattern = element.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern
-                    ?? throw new ApplicationException($"Couldn't get ExpandCollapse Pattern for combo {element.Current.AutomationId}");
-                expandCollapsePattern.Expand();
-                if (expandCollapsePattern.Current.ExpandCollapseState != ExpandCollapseState.Expanded)
-                {
-                    throw new ApplicationException($"Couldn't expand {element.Current.AutomationId}");
-                }
-
-                var treeWalker = TreeWalker.ControlViewWalker;
-                Console.WriteLine("Children:");
-                var child = treeWalker.GetFirstChild(element);
-                while (child != null)
-                {
-                    Console.WriteLine($"{child.Current.ControlType.LocalizedControlType} - [{child.Current.Name}]");
-                    child = treeWalker.GetNextSibling(child);
-                }
-
-                expandCollapsePattern.Collapse();
-                AutomationElement listItem = 
-                    element.FindFirst(TreeScope.Subtree, new PropertyCondition(AutomationElement.NameProperty, selection))
-                    ?? throw new ApplicationException($"Couldn't find item '{selection}' in combo descendants");
-                AutomationPattern automationPatternFromElement = 
-                    GetSpecifiedPattern(listItem, "SelectionItemPatternIdentifiers.Pattern")
-                    ?? throw new ApplicationException($"Couldn't get AutomationPattern for lit item.");
-                SelectionItemPattern selectionItemPattern = 
-                    listItem.GetCurrentPattern(automationPatternFromElement) as SelectionItemPattern
-                    ?? throw new ApplicationException($"Couldn't get SelectionItemPattern.");
-                selectionItemPattern.Select();
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException($"Couldn't select {element.Current.Name} -> {selection}. Reason: {ex.Message}");
-            }
-        }
-        */
-
-        internal void PaletteChange(string name)
-        {
-            _paletteElements[name].Select();
-        }
-
-        internal void SignalChange(string name)
-        {
-            _txSginalElements[" " + name].Select(); // These elements have additional space character on the beginning.
-        }
+        internal void PaletteChange(string name) => _paletteElements[name].Select();
+        // These elements have additional space character on the beginning.
+        internal void SignalChange(string name) => _txSginalElements[" " + name].Select();
 
         private static AutomationPattern GetSpecifiedPattern(AutomationElement element, string patternName)
         {

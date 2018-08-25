@@ -25,7 +25,7 @@ namespace USG_Access_Service
         /// </summary>
         private ConnectionHandler()
         {
-            _localIp = GetLocalIpAddress();
+            _localIp = GetLocalIpAddress(); // We need it only for logs.
             _commandHandler = new CommandHandler(this);
         }
 
@@ -104,7 +104,8 @@ namespace USG_Access_Service
                         _client = newsock.EndAccept(ar);
                         ar.AsyncWaitHandle.WaitOne();
                         Console.WriteLine(
-                            $"Client accepted. Remote: {((IPEndPoint) _client.RemoteEndPoint).Address}:{((IPEndPoint) _client.RemoteEndPoint).Port}");
+                            $"Client accepted. Remote: {((IPEndPoint) _client.RemoteEndPoint).Address}:" +
+                            $"{((IPEndPoint) _client.RemoteEndPoint).Port}");
                         accepted.Set();
                     }
                     catch (Exception e)
@@ -124,8 +125,8 @@ namespace USG_Access_Service
                 while (IsClientConnected)
                 {
                     var command = ReceiveString();
-                    if (command == null
-                    ) // If we won't get any command for socket receive timeout, we close the connection.
+                    // If we didn't get any command for socket receive timeout, we close the connection.
+                    if (command == null) 
                     {
                         Console.WriteLine("Connection timeout.");
                         break;
@@ -195,24 +196,18 @@ namespace USG_Access_Service
         internal void SendByteArray(byte[] data)
         {
             int dataTotal = data.Length;
-            int datatSent = 0;
+            int dataSent = 0;
 
             try
             {
-                //Console.WriteLine("Sending array length.");
+                // Send array length
                 SendInteger(dataTotal);
 
                 // Send data content
-                //Console.WriteLine($"Sending {dataTotal} bytes.\n" +
-                //                  $"First: {data[0]} {data[1]}.\n" +
-                //                  $"Last: {data[dataTotal - 1]} {data[dataTotal - 2]}...");
-                while (datatSent < dataTotal)
+                while (dataSent < dataTotal)
                 {
-                    datatSent += _client.Send(data, datatSent, dataTotal - datatSent, SocketFlags.None);
-                    //Console.WriteLine($"Sent {datatSent}/{dataTotal}...");
+                    dataSent += _client.Send(data, dataSent, dataTotal - dataSent, SocketFlags.None);
                 }
-
-                //Console.WriteLine("Send finished.");
             }
             catch (SocketException ex)
             {
@@ -234,16 +229,5 @@ namespace USG_Access_Service
         }
 
         public bool IsClientConnected => _client != null && _client.Connected;
-        //{
-        //    get
-        //    {
-        //        // true if a) Listen has been called and a connection is pending,
-        //        // or b) data is available for reading,
-        //        // or c) the connection has been closed, reset, or terminated.
-        //        bool readStatus = _client.Poll(1000, SelectMode.SelectRead);
-        //        bool hasData = _client.Available > 0;
-        //        return !readStatus || hasData;
-        //    }
-        //}
     }
 }
